@@ -24,25 +24,27 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
-Cypress.Commands.add('login', (
-    
-) => {
-  loginUsers(user,env);
-});
-
-function loginUsers(user,env) {
-  const env = Cypress.env('env') || 'dev'; // Default to 'dev' if no env is set
-  const envConfig = config[env];
-
-  cy.session(user, () => {
-    if (envConfig.baseUrl.includes('dev')) {
-      cy.origin(envConfig.loginDomain, { args: { envConfig, user } }, fillAuth0Form);
-    } else if (envConfig.baseUrl.includes('test')) {
-      cy.origin(envConfig.loginDomain, { args: { envConfig, user } }, fillAuth0Form);
-    }
-  });
+Cypress.Commands.add('login',(user=env.config.user1)=>{
+    loginUser(user);
+})
+function loginUser(user){
+    cy.session(user,()=>{
+        if(env.config.baseUrl.include('localhost')){
+            cy.orgin(env.config.loginDomain,{args:{env,user}},fillAuth0form);
+        }else{
+            cy.orgin(env.config.loginDomain,{args:{env,user}},fillAuth0form);
+        }
+    })
 }
-
-function fillAuth0Form({ envConfig, user }) {
-  // Your code to fill the Auth0 form goes here
+function fillAuth0form({env,user}){
+    cy.visit(env.config.baseurl);
+    const auth0Form =cy.get('#container',{timeout:2000});
+    const userNameField=auth0Form.get('data-cy[name="username"]');
+    const passwordField=auth0Form.get('data-cy[name="password"]');
+    userNameField.type(user.username);
+    passwordField.type(user.password);
+    if(user.isDomainUser){
+        userNameField.type('@gmail.com');
+        auth0Form.get('data-cy[name="submit"]').click();
+    }
 }

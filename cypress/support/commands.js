@@ -23,12 +23,26 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-Cypress.Commands.add('login', (user=env.config.user) => {
-    loginUsers(user)
-  })
-  function loginUsers(user)
-  cy.session(user,()=>{
-    if(env.config.baseUrl.includes('dev')){
-        cy.origin(env.config.loginDomain,{args:{env,user}},fillAuth0Form);
+
+Cypress.Commands.add('login', (
+    
+) => {
+  loginUsers(user,env);
+});
+
+function loginUsers(user,env) {
+  const env = Cypress.env('env') || 'dev'; // Default to 'dev' if no env is set
+  const envConfig = config[env];
+
+  cy.session(user, () => {
+    if (envConfig.baseUrl.includes('dev')) {
+      cy.origin(envConfig.loginDomain, { args: { envConfig, user } }, fillAuth0Form);
+    } else if (envConfig.baseUrl.includes('test')) {
+      cy.origin(envConfig.loginDomain, { args: { envConfig, user } }, fillAuth0Form);
     }
-  })
+  });
+}
+
+function fillAuth0Form({ envConfig, user }) {
+  // Your code to fill the Auth0 form goes here
+}

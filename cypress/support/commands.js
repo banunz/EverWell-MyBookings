@@ -29,11 +29,10 @@ Cypress.Commands.add('login',(user=env.config.user1)=>{
 })
 function loginUser(user){
     cy.session(user,()=>{
-        if(env.config.baseUrl.include('localhost')){
+        if(baseUrl === loginDomain){
             cy.orgin(env.config.loginDomain,{args:{env,user}},fillAuth0form);
         }else{
-            cy.orgin(env.config.loginDomain,{args:{env,user}},fillAuth0form);
-        }
+            fillAuth0form({env,user})       }
     })
 }
 function fillAuth0form({env,user}){
